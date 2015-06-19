@@ -1,4 +1,4 @@
-#ifnode-auth
+#ifnode-mongoose
 Mongoose plugin for ifnode
 
 
