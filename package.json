@@ -1,0 +1,27 @@
+{
+    "name": "ifnode-mongoose",
+    "version": "0.1.0",
+    "description": "Mongoose plugin for ifnode",
+    "main": "index.js",
+
+    "keywords": [
+        "mongoose",
+        "mongo",
+        "nosql",
+        "mvc"
+    ],
+    "author": "ilfroloff",
+    "license": "MIT",
+
+    "dependencies": {
+        "mongoose": "4.x.x",
+        "lodash": "3.9.x"
+    },
+    "devDependencies": {
+        "supertest": "1.x.x",
+        "mocha": "2.x.x",
+        "should": "6.x.x",
+
+        "ifnode": "git://github.com/ilfroloff/ifnode.git#bf0ba5fdac"
+    }
+}
