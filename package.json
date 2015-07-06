@@ -1,6 +1,6 @@
 {
     "name": "ifnode-mongoose",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Mongoose plugin for ifnode",
     "main": "index.js",
 
@@ -22,6 +22,6 @@
         "mocha": "2.x.x",
         "should": "6.x.x",
 
-        "ifnode": "git://github.com/ilfroloff/ifnode.git#bf0ba5fdac"
+        "ifnode": "1.x.x"
     }
 }

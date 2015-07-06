@@ -49,6 +49,7 @@ exports.schema = function MongooseSchema(app, MongooseSchema) {
 
         this._columns = model_config.columns || {};
         this._schema_config = _.defaults(model_config.config || {}, DEFAULT_CONFIG);
+        this._schema_config.collection = this.collection;
 
         _initialize_schema.call(this);
         this.statics = this._schema.statics = {};
