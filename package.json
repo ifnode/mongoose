@@ -1,6 +1,6 @@
 {
     "name": "ifnode-mongoose",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Mongoose plugin for ifnode",
     "main": "index.js",
 
@@ -14,14 +14,14 @@
     "license": "MIT",
 
     "dependencies": {
-        "mongoose": "4.x.x",
-        "lodash": "3.9.x"
+        "mongoose": "4.3.3",
+        "lodash": "3.9.3"
     },
     "devDependencies": {
-        "supertest": "1.x.x",
-        "mocha": "2.x.x",
-        "should": "6.x.x",
+        "supertest": "1.0.x",
+        "mocha": "2.2.x",
+        "should": "6.0.x",
 
-        "ifnode": "1.x.x"
+        "ifnode": "1.1.x"
     }
 }
