@@ -1,8 +1,13 @@
 {
     "name": "ifnode-mongoose",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "description": "Mongoose plugin for ifnode",
     "main": "index.js",
+
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/ifnode/mongoose.git"
+    },
 
     "keywords": [
         "mongoose",
@@ -10,6 +15,7 @@
         "nosql",
         "mvc"
     ],
+
     "author": "ilfroloff",
     "license": "MIT",
 
