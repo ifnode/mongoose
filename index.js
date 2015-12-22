@@ -1,22 +1,24 @@
 'use strict';
 
-var _ = require('lodash'),
-    mongoose = require('mongoose'),
+var mongoose = require('mongoose'),
+    defaults = require('lodash/object/defaults'),
+    isPlainObject = require('lodash/lang/isPlainObject'),
 
     DEFAULT_CONFIG = {
         id: false,
-        versionKey: false,
-        strict: true
+        versionKey: false
     };
 
 exports.mongoose = mongoose;
 exports.schema = function MongooseSchema(app, MongooseSchema) {
     var _initialize_schema = function() {
+        var has_columns = isPlainObject(this._columns);
+
         if(typeof this._schema_config.strict !== 'boolean') {
-            this._schema_config.strict = DEFAULT_CONFIG.strict;
+            this._schema_config.strict = has_columns && !!Object.keys(this._columns).length;
         }
 
-        this._schema = this._driver.Schema(this._columns, this._schema_config);
+        this._schema = this._driver.Schema(has_columns? this._columns : {}, this._schema_config);
     };
 
     MongooseSchema.schema = 'mongoose';
@@ -47,8 +49,8 @@ exports.schema = function MongooseSchema(app, MongooseSchema) {
     MongooseSchema.fn.initialize = function(model_config) {
         this.collection = model_config.collection;
 
-        this._columns = model_config.columns || {};
-        this._schema_config = _.defaults(model_config.config || {}, DEFAULT_CONFIG);
+        this._columns = model_config.columns;
+        this._schema_config = defaults(model_config.config || {}, DEFAULT_CONFIG);
         this._schema_config.collection = this.collection;
 
         _initialize_schema.call(this);
