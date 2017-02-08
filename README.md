@@ -1,132 +1,239 @@
-#ifnode-mongoose
-Mongoose plugin for ifnode
+# ifnode-mongoose
 
+## Description
+
+`ifnode-mongoose` is a schema plugin which is specified for `ifnode` and provide possibility to using `mongoose` in `ifnode` eco-system. Plugin does not around developer under some special features of `mongoose` and it more like proxy.
+
+Each `ifnode` model (returned by `app.Model`) is a abstraction under `Mongoose.Schema` and `Mongoose.Model`. `ifnode-mongoose` get possibility to reuse any `mongoose` plugins, validation and all other features.
 
 # Usage
-Install module:
 
-`npm install ifnode-mongoose --save`
+## Install module:
 
-Set database config:
+```bash
+npm install ifnode-mongoose --save
+```
 
-    config/local.js
-    
-    module.exports = {
-        ...
-        db: {
-            my_mongo_database: {
-                schema: 'mongoose',
-                config: config: String|Object|Function
-            }
+## API
+
+### `ifnode` database connection config options
+
+Name | Type | Description
+---- | ---- | -----------
+- | `string` | Mongo connection uri. Read more on [mongoose site](http://docs.mongodb.org/manual/reference/connection-string)
+`config` | `Object: { uri, options }` | Mongoose connect params. Read more on [mongoose site](http://mongoosejs.com/docs/connections.html#options) (`uri` - first argument of `mongoose.connect(uri, options)`, `options` - second argument of `mongoose.connect(uri, options)`);
+- | `function` | Adds possibility to create own connection. Useful for multiplied mongo connections
+
+#### Database connection examples
+
+##### By `string`
+
+```javascript
+module.exports = {
+    db: {
+        my_mongo_database: {
+            schema: 'mongoose',
+            config: 'mongodb://root:123@localhost:27017/db'
         }
-        ...
-    };
-    
-    config: String                  Mongo connection uri. Check here: http://docs.mongodb.org/manual/reference/connection-string/
-    config: Object                  Mongoose connect params. Check here: http://mongoosejs.com/docs/connections.html#options
-            .uri                    First argument of mongoose.connect(uri, options)
-            .options                Second argument of mongoose.connect(uri, options);
-    config: Function                Possibility to set custom configuration
+    }
+};
+```
 
-Example
+##### By `Object`
 
-    config/local.js
-    
-    module.exports = {
-        db: {
-            string_config: {
-                schema: 'mongoose',
-                config: 'mongodb://localhost/blog'
-            },
-            object_config: {
-                schema: 'mongoose',
-                config: {
-                    uri: 'mongodb://localhost:27018/blog',
-                    options: {
-                        user: 'root',
-                        pass: '123',
-                        server: { poolSize: 10 }
-                    }
-                }
-            },
-            function_config: {
-                schema: 'mongoose',
-                config: function(mongoose) {
-                    mongoose.connect('mongodb://localhost:27019/blog');
-                    
-                    return mongoose;
+```javascript
+module.exports = {
+    db: {
+        my_mongo_database: {
+            schema: 'mongoose',
+            config: {
+                uri: 'mongodb://localhost:27017/db',
+                options: {
+                    user: 'root',
+                    pass: '123'
                 }
             }
         }
-    };
+    }
+};
+```
+
+##### By `function`
+
+```javascript
+module.exports = {
+    db: {
+        my_mongo_database: {
+            schema: 'mongoose',
+            config(Mongoose) {
+                Mongoose.set('debug', true);
+                Mongoose.Promise = Promise;
+                
+                return Mongoose.createConnection('mongodb://localhost:27017/db', {
+                    user: 'root',
+                    pass: '123'
+                });
+            }
+        }
+    }
+};
+```
+
+##### Combined connections
+
+```javascript
+module.exports = {
+    db: {
+        connection1: {
+            schema: 'mongoose',
+            config: 'mongodb://root:123@localhost:27017/somedb1'
+        },
+        connection2: {
+            schema: 'mongoose',
+            config: {
+                uri: 'mongodb://localhost:27017/somedb2',
+                options: {
+                    user: 'root',
+                    pass: '123'
+                }
+            }
+        },
+        connection3: {
+            schema: 'mongoose',
+            config(Mongoose) {
+                return Mongoose.createConnection('mongodb://localhost:27018/db', {
+                    mongos: true
+                });
+            }
+        }
+    }
+};
+```
+
+### Creating `ifnode` models options
+
+```javascript
+const app = require('ifnode')();
+const UsersModel = app.Model(
+    model_options,
+    db_options
+);
+```
+
+#### `model_options` (required)
+
+Name | Optional | Description
+---- | -------- | -----------
+`collection` | `false` | Name of collection
+`columns` | `true` | Mongoose Schema columns. Rules for create check [here](http://mongoosejs.com/docs/guide.html#definition)
+`config` | `true` | Mongoose Schema options. List check [here](http://mongoosejs.com/docs/guide.html#options)
+
+#### `db_options` (optional)
+
+Name | Description
+---- | -----------
+`db` | Which of database configuration need use (from `app.config.db`). Default: first in `app.config.db`
+`alias` | Model`s alias (in app.models)
+
+### Model instance properties
+
+#### Properties
+
+Name | Description
+---- | -----------
+`.statics` | Link to [mongoose.statics](http://mongoosejs.com/docs/guide.html#statics)
+`.methods` | Link to [mongoose.methods](http://mongoosejs.com/docs/guide.html#methods)
+
+#### Methods
+
+Name | Description
+---- | -----------
+`.schema()` | Return mongoose `Schema` (`new Mongoose.Schema`) instance (result of `new Mongoose.Schema`)
+`.model()` | Return mongoose `Nodel` (result of `Mongoose.createConnection().Model`)
+
+## Example of usage in project
+
+### config
+
+```javascript
+// config/dev.js
+module.exports = {
+    db: {
+        customers_db: {
+            schema: 'mongoose',
+            config: 'mongodb://localhost/customers'
+        },
+        events_db: {
+            schema: 'mongoose',
+            config: 'mongodb://localhost/events'
+        }
+    }
+}
+```
+
+### models
+
+```javascript
+// customers.js
+
+const app = require('ifnode')();
+const CustomersModel = app.Model({
+    collection: 'customers',
+    config: {
+        strict: false
+    }
+}, {
+    db: 'customers_db',
+    alias: 'UsersModel'
+});
+const originalCustomersModel = CustomersModel.model();
+
+originalCustomersModel.schema.path('name').validate(
+    name => /[0-9]/i.test(name),
+    'Invalid name'
+);
+
+CustomersModel.statics.findByEmail = function(email) {
+    return this.find({ email });
+};
+```
+
+```javascript
+// customers.js
+
+const app = require('ifnode')();
+const EventsModel = app.Model({
+    collection: 'events',
+    columns: {
+        id: {
+            type: String,
+            index: true,
+            unique: true
+        },
+        type: String
+    }
+}, {
+    db: 'events_db'
+});
+
+EventsModel.statics.pushEvent = function(event) {
+    return this.create(event);
+};
+```
 
 
-Create model (users, for example):
+```javascript
+// app.js
+const IFNode = require('ifnode');
+const app = IFNode({
+    environment: 'dev'
+});
 
-    users.js
-    
-    var app = require('ifnode')(),
-        users_model = app.Model(schema, options);
-        
-schema:
-
-    .collection                 Name of collection
-    .columns                    Mongoose Schema columns. Rules for create check here: http://mongoosejs.com/docs/guide.html#definition
-    .config                     Mongoose Schema options. List check here: http://mongoosejs.com/docs/guide.html#options
-
-options
-
-    .db                         Which of database configuration need use (from app.config.db) [optional] Default: first in app.config.db or default
-    .alias                      Model`s alias (in app.models) [optional]
-    
-    
-Model instance properties:
-
-    .methods                    Analog of http://mongoosejs.com/docs/guide.html#methods
-    .statics                    Analog of http://mongoosejs.com/docs/guide.html#statics
-    
-    .mongoose()                 Return original mongoose module
-    .schema()                   Return mongoose schema instance (result of new mongoose.Schema(...))
-    .model()                    Return mongoose model instance (result of mongoose.model(...))
-
-Statics properties of module:
-
-    .mongoose                   Return original mongoose module
-
-
-# Examples
-
-Return original mongoose 
-
-    var ifnode_mongoose = require('ifnode-mongoose'),
-        mongoose = ifnode_mongoose.mongoose;
-       
-Create static method:
-
-    var app = require('ifnode')(),
-        users_model = app.Model({ collection: 'users' });
-    
-    users_model.statics.get_all = function(callback) {
-        this.find(callback);
-    };
-
-Get original schema and model
-
-    var app = require('ifnode')(),
-        users_model = app.Model({ collection: 'users' }),
-        
-        original_users_schema = users_model.schema(),
-        original_users_model = users_model.model();
-        
-    original_users_model.schema.path('name').validate(function(name) {
-        return /[0-9]/i.test(name);
-    }, 'Invalid name');
-
-
-# Run server
-
-    var ifnode = require('ifnode'),
-        app = ifnode();
-    
-    app.register('ifnode-mongoose');
-    app.run();
+app.load();
+app.models.UsersModel.findByEmail('test@email.com').then(users => {
+    /* do smt */
+});
+app.models.events.pushEvent({
+    type: 'logsmt'
+});
+```
