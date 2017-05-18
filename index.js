@@ -90,17 +90,23 @@ exports.schema = function MongooseSchema(app, MongooseSchema) {
      * @param {Object}  model_config
      */
     MongooseSchema.prototype.initialize = function(model_config) {
+        var collection = model_config.collection;
+        var name = model_config.name;
+        var columns = model_config.columns;
+        var config = model_config.config;
+
         this._schema = createMongooseSchema(
             _defaults(
-                { collection: model_config.collection },
-                model_config.config,
+                { collection: collection },
+                config,
                 DEFAULT_CONFIG
             ),
-            model_config.columns
+            columns
         );
         this._model = null;
 
-        this.collection = model_config.collection;
+        this.collection = collection;
+        this.name = name || collection;
         this.statics = this._schema.statics = {};
         this.methods = this._schema.methods = {};
     };
@@ -110,7 +116,7 @@ exports.schema = function MongooseSchema(app, MongooseSchema) {
      * @returns {Model}
      */
     MongooseSchema.prototype.compile = function() {
-        this._model = this._driver.model(this.collection, this._schema);
+        this._model = this._driver.model(this.name, this._schema);
 
         return this._model;
     };

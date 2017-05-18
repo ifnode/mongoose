@@ -125,6 +125,7 @@ const UsersModel = app.Model(
 Name | Optional | Description
 ---- | -------- | -----------
 `collection` | `false` | Name of collection
+`name` | `true` | Name for attaching to `ifnode`'s application `models` property (default is `collection` option)
 `columns` | `true` | Mongoose Schema columns. Rules for create check [here](http://mongoosejs.com/docs/guide.html#definition)
 `config` | `true` | Mongoose Schema options. List check [here](http://mongoosejs.com/docs/guide.html#options)
 
@@ -203,6 +204,7 @@ CustomersModel.statics.findByEmail = function(email) {
 
 const app = require('ifnode')();
 const EventsModel = app.Model({
+    name: 'EventsModel',
     collection: 'events',
     columns: {
         id: {
@@ -233,7 +235,7 @@ app.load();
 app.models.UsersModel.findByEmail('test@email.com').then(users => {
     /* do smt */
 });
-app.models.events.pushEvent({
+app.models.EventsModel.pushEvent({
     type: 'logsmt'
 });
 ```
