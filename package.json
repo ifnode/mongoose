@@ -16,7 +16,7 @@
     "author": "ilfroloff",
     "license": "MIT",
     "dependencies": {
-        "lodash": "4.17.4"
+        "lodash": "4.17.20"
     },
     "peerDependencies": {
         "mongoose": "4.13.9"
